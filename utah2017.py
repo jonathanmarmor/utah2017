@@ -5,14 +5,6 @@ import random
 from notation_tools import make_music21_score, make_music21_note, show
 
 
-oboe_notes = range(60, 87)
-oboe_notes.remove(61)
-
-bass_notes = range(28, 68)
-
-guitar_notes = range(40, 76)
-
-
 score = make_music21_score(
     time_signature=None,
     starting_tempo_bpm=60,
@@ -30,11 +22,20 @@ score = make_music21_score(
 )
 
 violin, flute, oboe, clarinet, alto_saxophone, trumpet, bass, percussion = score.parts
+instruments = [violin, flute, oboe, clarinet, alto_saxophone, trumpet, bass, percussion]
+
+violin.range = range(55, 101)
+flute.range = range(60, 97)
+oboe.range = range(59, 92)
+clarinet.range = range(50, 90)
+alto_saxophone.range = range(49, 81)
+trumpet.range = range(52, 83)
+bass.range = range(28, 61)
 
 
 def add_note(instrument, pitch_options, duration_options):
     duration = random.choice([0.5, 1.0, 1.5, 2.0])
-    pitch = random.choice(oboe_notes)
+    pitch = random.choice(pitch_options)
     note = make_music21_note(pitch, duration)
     instrument.append(note)
 
@@ -42,12 +43,7 @@ def add_note(instrument, pitch_options, duration_options):
 for _ in range(20):
     duration_options = [0.5, 1.0, 1.5, 2.0]
 
-    add_note(violin, oboe_notes, duration_options)
-    add_note(oboe, oboe_notes, duration_options)
-    add_note(flute, oboe_notes, duration_options)
-    add_note(clarinet, oboe_notes, duration_options)
-    add_note(alto_saxophone, oboe_notes, duration_options)
-    add_note(trumpet, oboe_notes, duration_options)
-    add_note(bass, bass_notes, duration_options)
+    for i in instruments[:-1]:
+        add_note(i, i.range, duration_options)
 
 show(score)
