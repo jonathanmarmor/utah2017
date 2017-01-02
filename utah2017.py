@@ -26,7 +26,7 @@ instruments = [violin, flute, oboe, clarinet, alto_saxophone, trumpet, bass, per
 
 violin.range = range(55, 96)
 flute.range = range(60, 97)
-oboe.range = range(59, 92)
+oboe.range = range(59, 87)
 clarinet.range = range(50, 90)
 alto_saxophone.range = range(49, 81)
 trumpet.range = range(52, 83)
