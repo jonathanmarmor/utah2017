@@ -75,8 +75,8 @@ def make_music21_score(time_signature=None, starting_tempo_bpm=60,
     return score
 
 
-def make_music21_note(pitch_number, duration=1.0):
-    if pitch_number == 'rest':
+def make_music21_note(pitch_number=None, duration=1.0):
+    if pitch_number == None or pitch_number == 'rest':
         n = music21.note.Rest()
     elif isinstance(pitch_number, list):
         pitches = [music21.pitch.Pitch(p) for p in pitch_number]
@@ -93,9 +93,5 @@ def make_music21_note(pitch_number, duration=1.0):
     d = music21.duration.Duration()
     d.quarterLength = duration
     n.duration = d
-
-    # if not n.isRest:
-    #     if n.pitch.accidental.name is 'natural':
-    #         n.pitch.accidental = None
 
     return n
