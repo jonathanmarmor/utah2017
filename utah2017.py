@@ -2,7 +2,7 @@
 
 import random
 
-from notation_tools import Piece, make_music21_note
+from notation_tools import Piece
 
 
 instrument_names = (
@@ -13,11 +13,13 @@ instrument_names = (
     'alto_saxophone',
     'trumpet',
     'bass',
-    'percussion'
+    # 'percussion'
 )
 
 piece = Piece(
     instrument_names=instrument_names,
+    title='Utah 2017',
+    composer='Jonathan Marmor',
     time_signature=None,
     starting_tempo_bpm=60,
     starting_tempo_quarter_duration=1.0
@@ -34,19 +36,18 @@ def add_note(instrument, pitch_options, duration_options):
     pitch = None
     if random.random() < .8:
         pitch_options = [p for p in pitch_options if p % 12 in scale]
-        if instrument.notesAndRests and instrument.notesAndRests[-1].isNote:
-            previous_pitch = instrument[-1].ps
+        if instrument._music21_part.notesAndRests and instrument._music21_part.notesAndRests[-1].isNote:
+            previous_pitch = instrument._music21_part.notes[-1].ps
             pitch_options = [p for p in pitch_options if abs(previous_pitch - p) < 5]
         pitch = random.choice(pitch_options)
-    note = make_music21_note(pitch, duration)
-    instrument.append(note)
+    instrument.add_note(pitch, duration)
 
 
 def main():
     for _ in range(40):
         duration_options = [0.5, 1.0, 1.0, 1.0, 1.5, 1.5, 2.0, 2.5]
-        for i in piece.instruments[:-1]:
-            add_note(i, i.range, duration_options)
+        for instrument in piece.instruments[:-1]:
+            add_note(instrument, instrument.range, duration_options)
 
     piece.show()
 
