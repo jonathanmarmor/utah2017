@@ -20,6 +20,17 @@ instrument_directory = {
     'percussion': {'class': music21.instrument.Percussion, 'name': 'Percussion', 'abbreviation': 'perc'}
 }
 
+instrument_ranges = {
+    'violin': range(55, 96),
+    'flute': range(60, 97),
+    'oboe': range(59, 87),
+    'clarinet': range(50, 90),
+    'alto_saxophone': range(49, 81),
+    'trumpet': range(52, 83),
+    'bass': range(28, 61),
+    'percussion': None
+}
+
 
 def make_music21_score(time_signature=None, starting_tempo_bpm=60,
         starting_tempo_quarter_duration=1.0,
@@ -42,7 +53,7 @@ def make_music21_score(time_signature=None, starting_tempo_bpm=60,
     score = music21.stream.Score()
     score.insert(0, metadata)
 
-    parts = []
+    parts = []  # Unnecessary?
     for name in instrument_names:
         instrument = instrument_directory[name]
 
@@ -69,7 +80,7 @@ def make_music21_score(time_signature=None, starting_tempo_bpm=60,
         if clef:
             part.append(clef())
 
-        parts.append(part)
+        parts.append(part)  # Unnecessary?
         score.insert(0, part)
 
     return score
@@ -95,3 +106,32 @@ def make_music21_note(pitch_number=None, duration=1.0):
     n.duration = d
 
     return n
+
+
+class Piece(object):
+    def __init__(
+        self,
+        instrument_names,
+        time_signature=None,
+        starting_tempo_bpm=60,
+        starting_tempo_quarter_duration=1.0
+        ):
+
+        self.instrument_names = instrument_names
+
+        self.score = make_music21_score(
+            time_signature=time_signature,
+            starting_tempo_bpm=starting_tempo_bpm,
+            starting_tempo_quarter_duration=starting_tempo_quarter_duration,
+            instrument_names=instrument_names
+        )
+
+        self.instruments = []
+        for inst_name, part in zip(self.instrument_names, self.score.parts):
+            setattr(self, inst_name, part)
+            self.instruments.append(part)
+
+            getattr(self, inst_name).range = instrument_ranges[inst_name]
+
+    def show(self):
+        show(self.score)
