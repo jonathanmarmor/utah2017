@@ -20,6 +20,7 @@ instrument_directory = {
     'percussion': {'class': music21.instrument.Percussion, 'name': 'Percussion', 'abbreviation': 'perc'}
 }
 
+
 instrument_ranges = {
     'violin': range(55, 96),
     'flute': range(60, 97),

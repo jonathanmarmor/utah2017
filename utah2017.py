@@ -16,6 +16,7 @@ instrument_names = (
     # 'percussion'
 )
 
+
 piece = Piece(
     instrument_names=instrument_names,
     title='Utah 2017',
@@ -26,10 +27,8 @@ piece = Piece(
 )
 
 
-### Make Music
-
-
 scale = [0, 2, 4, 7, 9]
+
 
 def add_note(instrument, pitch_options, duration_options):
     duration = random.choice([0.5, 1.0, 1.5, 2.0])
