@@ -19,7 +19,7 @@ instrument_names = (
 
 piece = Piece(
     instrument_names=instrument_names,
-    title='Utah 2017',
+    title='FULL MOVIE',
     composer='Jonathan Marmor',
     time_signature=None,
     starting_tempo_bpm=60,
