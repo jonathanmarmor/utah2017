@@ -3,10 +3,26 @@ import datetime
 import music21
 
 
+# NOTATION_GUI_APP = '/Applications/MuseScore 2.app'
+NOTATION_GUI_APP = '/Applications/Sibelius 7.app'
+
+
 def show(stream):
-    notation_gui_app = '/Applications/MuseScore 2.app'
-    # notation_gui_app = '/Applications/Sibelius 7.5.app'
-    stream.show('musicxml', notation_gui_app)
+    stream.show('musicxml', NOTATION_GUI_APP)
+
+
+def get_music21_user_settings_path():
+    user_settings = music21.environment.UserSettings()
+    return user_settings.getSettingsPath()
+
+
+def print_music21_user_settings():
+    for key in sorted(music21.environment.keys()):
+        try:
+            value = music21.environment.get(key)
+        except music21.environment.EnvironmentException:
+            value = ''
+        print '{:<25} {}'.format(key, value)
 
 
 instrument_directory = {
@@ -127,7 +143,7 @@ class Instrument(object):
         self._music21_part.append(m21_note)
 
 
-class Piece(object):
+class Notation(object):
     """A clean interface to a music21 score"""
     def __init__(
             self,
@@ -138,6 +154,9 @@ class Piece(object):
             starting_tempo_bpm=60,
             starting_tempo_quarter_duration=1.0
         ):
+
+        # Set up temp file directory
+        music21.environment.set('directoryScratch', 'output/tmp')
 
         self.instrument_names = instrument_names
 
@@ -151,7 +170,7 @@ class Piece(object):
             starting_tempo_quarter_duration=starting_tempo_quarter_duration,
         )
 
-        # Instantiate parts and instruments and make them accessible via Piece
+        # Instantiate parts and instruments and make them accessible via Notation
         self.instruments = []
         self.instruments_by_name = {}
         for inst_name, music21_part in zip(self.instrument_names, self._score.parts):
