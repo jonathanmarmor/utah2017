@@ -15,6 +15,10 @@ def meter_position(tick):
     return bar_number, beat_within_bar, position_within_beat
 
 
+def beats_to_seconds(beats, bpm=60):
+    return beats / (bpm / 60.0)
+
+
 notes = [
     (None, 3),
     (64, .5),
@@ -88,10 +92,6 @@ class Music(dict):
 
     def duration(self):
         return max(instrument.duration() for instrument in self.instruments)
-
-    def make_test_data(self):
-        for i in self.instrument_names:
-            self.grid[i] = ['{}{}'.format(i[0], str(x)) for x in range(5)]
 
     def get(self, instruments, start=0, end=None):
         """
@@ -209,14 +209,67 @@ class Music(dict):
                 tick = instrument.duration()
                 bar_number, beat_within_bar, position_within_beat = meter_position(tick)
 
+    def big_chord(self):
+        mode = [0, 2, 4, 5, 7, 9, 11]
+        root = random.choice([0, 7, 5, 2, 10])  # easier keys on C instruments
+        scale = [(root + p) % 12 for p in mode]
+
+
+        # Bass
+        b = self.bass
+        bass_pitch = 48  # random.choice([p for p in b.range[:13] if p % 12 in scale])
+
+        # Thirds (sax, trumpet)
+        sx = self.alto_saxophone
+        tpt = self.trumpet
+
+        sx_pitch = 64  # random.choice([p for p in sx.range[8:-8] if p % 12 in scale])
+        tpt_pitch = 67
+
+        # Cluster (flute, oboe, clarinet)
+        fl = self.flute
+        ob = self.oboe
+        cl = self.clarinet
+        cluster_instruments = [fl, ob, cl]
+
+        fl_pitch = 84
+        ob_pitch = 83
+        cl_pitch = 81
+
+        # Fifths (violin)
+        vln = self.violin
+        vln_pitch = [62, 69]
+
+
+        for tick in range(16):
+            # Bass
+            b.append((bass_pitch, 4.0))
+
+            # Thirds
+            sx.append((sx_pitch, 4.0))
+            tpt.append((tpt_pitch, 4.0))
+
+            # Cluster
+            cl.append((cl_pitch, 4.0))
+            ob.append((ob_pitch, 4.0))
+            fl.append((fl_pitch, 4.0))
+
+            # Fifths
+            vln.append((vln_pitch, 4.0))
+
+        '''
+        harmonic change pace
+        breath pace
+        '''
 
 
 def main():
     music = Music()
 
-    music.make_random_notes()
-
+    music.big_chord()
+    # music.make_random_notes()
     # music.grid['alto_saxophone'] = notes
+
     music.notate()
 
 
