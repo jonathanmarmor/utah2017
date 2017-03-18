@@ -50,16 +50,22 @@ notes = [
 ]
 
 
+class Note(object):
+    def __init__(self, pitch=None, duration=0.0):
+        self.pitch = pitch
+        self.duration = duration
+
+
 class Instrument(list):
     def __init__(self, inst_name):
         self.name = inst_name
         self.range = instrument_ranges[self.name]
 
     def duration(self):
-        return sum([note[-1] for note in self])
+        return sum([note.duration for note in self])
 
 
-class Music(dict):
+class Music(object):
     def __init__(self):
         self.instrument_names = (
             'violin',
@@ -169,8 +175,8 @@ class Music(dict):
 
         for instrument in self.instruments:
             notation_instrument = self.notation.instruments_by_name[instrument.name]
-            for pitch, duration in instrument:
-                notation_instrument.add_note(pitch, duration)
+            for note in instrument:
+                notation_instrument.add_note(note.pitch, note.duration)
 
         self.notation.show()
 
@@ -204,7 +210,7 @@ class Music(dict):
                     pitch = random.choice(pitch_options)
                     duration = random.randint(1, 8) / 2.0
 
-                instrument.append((pitch, duration))
+                instrument.append(Note(pitch, duration))
 
                 tick = instrument.duration()
                 bar_number, beat_within_bar, position_within_beat = meter_position(tick)
@@ -266,8 +272,8 @@ class Music(dict):
 def main():
     music = Music()
 
-    music.big_chord()
-    # music.make_random_notes()
+    # music.big_chord()
+    music.make_random_notes()
     # music.grid['alto_saxophone'] = notes
 
     music.notate()
