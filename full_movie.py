@@ -4,7 +4,7 @@ import random
 import math
 
 from notation_tools import Notation
-from instrument_ranges import instrument_ranges
+from instrument_data import instrument_data
 
 
 def meter_position(tick):
@@ -19,37 +19,6 @@ def beats_to_seconds(beats, bpm=60):
     return beats / (bpm / 60.0)
 
 
-notes = [
-    (None, 3),
-    (64, .5),
-    (60, .5),
-    (69, 1.0 / 3),
-    (72, 1.0 / 3),
-    (69, 1.0 / 3),
-    (67, .5),
-    (72, 1),
-    (72, .5),
-    (67, 1.0 / 3),
-    (72, 1.0 / 3),
-    (67, 1.0 / 3),
-    (66, .5),
-    (None, .5),
-    (69, .5),
-    (67, .5),
-    (None, .5),
-    (64, .5),
-    (60, .5),
-    (None, .5),
-    (65, .5),
-    (67, .5),
-    (63, .5),
-    (64, .5),
-    (60, .5),
-    (57, .5),
-    (None, 1)
-]
-
-
 class Note(object):
     def __init__(self, pitch=None, duration=0.0):
         self.pitch = pitch
@@ -59,7 +28,8 @@ class Note(object):
 class Instrument(list):
     def __init__(self, inst_name):
         self.name = inst_name
-        self.range = instrument_ranges[self.name]
+        self.range = instrument_data[self.name]['range']
+        self.abbreviation = instrument_data[self.name]['abbreviation']
 
     def duration(self):
         return sum([note.duration for note in self])
@@ -87,12 +57,13 @@ class Music(object):
 
 
     def _setup_parts(self):
-        # Instantiate parts and instruments and make them accessible via Piece
+        # Instantiate instruments/parts and make them accessible via Music
         self.instruments = []
         self.grid = {}
         for inst_name in self.instrument_names:
             instrument = Instrument(inst_name)
-            setattr(self, inst_name, instrument)
+            setattr(self, instrument.name, instrument)
+            setattr(self, instrument.abbreviation, instrument)
             self.instruments.append(instrument)
             self.grid[inst_name] = instrument
 
@@ -179,6 +150,38 @@ class Music(object):
                 notation_instrument.add_note(note.pitch, note.duration)
 
         self.notation.show()
+
+    def september_song(self):
+        notes = [
+            (None, 3),
+            (64, .5),
+            (60, .5),
+            (69, 1.0 / 3),
+            (72, 1.0 / 3),
+            (69, 1.0 / 3),
+            (67, .5),
+            (72, 1),
+            (72, .5),
+            (67, 1.0 / 3),
+            (72, 1.0 / 3),
+            (67, 1.0 / 3),
+            (66, .5),
+            (None, .5),
+            (69, .5),
+            (67, .5),
+            (None, .5),
+            (64, .5),
+            (60, .5),
+            (None, .5),
+            (65, .5),
+            (67, .5),
+            (63, .5),
+            (64, .5),
+            (60, .5),
+            (57, .5),
+            (None, 1)
+        ]
+        self.sx.extend([Note(*n) for n in notes])
 
     def make_random_notes(self):
         mode = [0, 2, 4, 5, 7, 9, 11]
@@ -273,8 +276,8 @@ def main():
     music = Music()
 
     # music.big_chord()
-    music.make_random_notes()
-    # music.grid['alto_saxophone'] = notes
+    # music.make_random_notes()
+    music.september_song()
 
     music.notate()
 
