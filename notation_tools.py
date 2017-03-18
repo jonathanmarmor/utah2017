@@ -3,8 +3,8 @@ import datetime
 import music21
 
 
-# NOTATION_GUI_APP = '/Applications/MuseScore 2.app'
-NOTATION_GUI_APP = '/Applications/Sibelius 7.app'
+NOTATION_GUI_APP = '/Applications/MuseScore 2.app'
+# NOTATION_GUI_APP = '/Applications/Sibelius 7.app'
 
 
 def show(stream):
