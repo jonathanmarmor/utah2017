@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 
 import random
+import math
 
 from notation_tools import Notation
 from instrument_ranges import instrument_ranges
+
+
+def meter_position(tick):
+    position_within_beat, beat = math.modf(tick)
+    beat = int(beat)
+    beat_within_bar = beat % 4
+    bar_number = beat // 4
+    return bar_number, beat_within_bar, position_within_beat
 
 
 notes = [
@@ -139,7 +148,7 @@ class Music(dict):
         if instruments is 'all':
             instruments = self.instrument_names
         if end is None:
-            end = self.get_current_duration()
+            end = self.duration()
 
         result = {}
         for i in instruments:
@@ -147,9 +156,6 @@ class Music(dict):
 
         return result
         # return {i:self.grid[i][start:end] for i in instruments}
-
-    def get_current_duration(self):
-        return len(self.grid[self.instrument_names[0]])
 
     def notate(self):
         self.notation = Notation(
@@ -161,10 +167,9 @@ class Music(dict):
             starting_tempo_quarter_duration=self.starting_tempo_quarter_duration
         )
 
-        for instrument_name in self.grid:
-            part = self.grid[instrument_name]
-            notation_instrument = self.notation.instruments_by_name[instrument_name]
-            for pitch, duration in part:
+        for instrument in self.instruments:
+            notation_instrument = self.notation.instruments_by_name[instrument.name]
+            for pitch, duration in instrument:
                 notation_instrument.add_note(pitch, duration)
 
         self.notation.show()
@@ -182,28 +187,28 @@ class Music(dict):
 
         for instrument in self.instruments:
             previous_pitch = instrument.range[len(instrument.range) / 2]
-            while instrument.duration() <= 64:
 
-                if instrument.duration() < 16:
-                    scale = scales[0]
-                elif instrument.duration() < 32:
-                    scale = scales[1]
-                elif instrument.duration() < 48:
-                    scale = scales[2]
-                elif instrument.duration() < 64:
-                    scale = scales[3]
+            tick = instrument.duration()
+            bar_number, beat_within_bar, position_within_beat = meter_position(tick)
+
+            while bar_number <= 16:
+                scale == scales[bar_number / 4]
 
                 if random.random() > .5:
                     pitch = None
-                    duration = random.randint(1, 16) / 4.0
+                    duration = random.choice([1, 1.5, 2])
                 else:
                     pitch_options = range(previous_pitch - 3, previous_pitch + 4)
                     pitch_options.remove(previous_pitch)
                     pitch_options = [p for p in instrument.range if p in pitch_options and p % 12 in scale]
                     pitch = random.choice(pitch_options)
-                    duration = random.randint(1, 8) / 4.0
+                    duration = random.randint(1, 8) / 2.0
 
                 instrument.append((pitch, duration))
+
+                tick = instrument.duration()
+                bar_number, beat_within_bar, position_within_beat = meter_position(tick)
+
 
 
 def main():
