@@ -19,6 +19,12 @@ def beats_to_seconds(beats, bpm=60):
     return beats / (bpm / 60.0)
 
 
+class Tick(object):
+    def __init__(self, tick):
+        self.tick = tick
+        self.bar_number, self.beat_within_bar, self.position_within_beat = meter_position(tick)
+
+
 class Note(object):
     def __init__(self, pitch=None, duration=0.0):
         self.pitch = pitch
@@ -33,6 +39,12 @@ class Instrument(list):
 
     def duration(self):
         return sum([note.duration for note in self])
+
+    def get_tick(self):
+        return Tick(self.duration())
+
+    def add_note(self, pitch=None, duration=0.0):
+        self.append(Note(pitch=pitch, duration=duration))
 
 
 class Music(object):
@@ -197,11 +209,9 @@ class Music(object):
         for instrument in self.instruments:
             previous_pitch = instrument.range[len(instrument.range) / 2]
 
-            tick = instrument.duration()
-            bar_number, beat_within_bar, position_within_beat = meter_position(tick)
-
-            while bar_number <= 16:
-                scale == scales[bar_number / 4]
+            tick = instrument.get_tick()
+            while tick.bar_number <= 16:
+                scale == scales[tick.bar_number / 4]
 
                 if random.random() > .5:
                     pitch = None
@@ -213,10 +223,9 @@ class Music(object):
                     pitch = random.choice(pitch_options)
                     duration = random.randint(1, 8) / 2.0
 
-                instrument.append(Note(pitch, duration))
+                instrument.add_note(pitch, duration)
 
-                tick = instrument.duration()
-                bar_number, beat_within_bar, position_within_beat = meter_position(tick)
+                tick = instrument.get_tick()
 
     def big_chord(self):
         mode = [0, 2, 4, 5, 7, 9, 11]
@@ -250,21 +259,28 @@ class Music(object):
         vln_pitch = [62, 69]
 
 
+        tick = self.duration()
+        bar_number, beat_within_bar, position_within_beat = meter_position(tick)
+
+        # while bar_number <= 16:
+
+
+
         for tick in range(16):
             # Bass
-            b.append((bass_pitch, 4.0))
+            b.add_note(bass_pitch, 4.0)
 
             # Thirds
-            sx.append((sx_pitch, 4.0))
-            tpt.append((tpt_pitch, 4.0))
+            sx.add_note(sx_pitch, 4.0)
+            tpt.add_note(tpt_pitch, 4.0)
 
             # Cluster
-            cl.append((cl_pitch, 4.0))
-            ob.append((ob_pitch, 4.0))
-            fl.append((fl_pitch, 4.0))
+            cl.add_note(cl_pitch, 4.0)
+            ob.add_note(ob_pitch, 4.0)
+            fl.add_note(fl_pitch, 4.0)
 
             # Fifths
-            vln.append((vln_pitch, 4.0))
+            vln.add_note(vln_pitch, 4.0)
 
         '''
         harmonic change pace
@@ -275,9 +291,9 @@ class Music(object):
 def main():
     music = Music()
 
-    # music.big_chord()
+    music.big_chord()
     # music.make_random_notes()
-    music.september_song()
+    # music.september_song()
 
     music.notate()
 
