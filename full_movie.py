@@ -5,6 +5,7 @@ import math
 
 from notation_tools import Notation
 from instrument_data import instrument_data
+import utils
 
 
 def meter_position(tick):
@@ -30,6 +31,9 @@ class Note(object):
         self.pitch = pitch
         self.duration = duration
 
+    def __repr__(self):
+        return '<Note - pitch: {} duration: {}>'.format(self.pitch, self.duration)
+
 
 class Instrument(list):
     def __init__(self, inst_name):
@@ -45,6 +49,13 @@ class Instrument(list):
 
     def add_note(self, pitch=None, duration=0.0):
         self.append(Note(pitch=pitch, duration=duration))
+
+    def get_at_tick(self, tick):
+        duration = 0
+        for note in self:
+            if duration <= tick < duration + note.duration:
+                return note
+            duration += note.duration
 
 
 class Music(object):
@@ -81,6 +92,13 @@ class Music(object):
 
     def duration(self):
         return max(instrument.duration() for instrument in self.instruments)
+
+    def get_at_tick(self, tick):
+        result = {}
+        for instrument in self.instruments:
+            result[instrument.name] = instrument.get_at_tick(tick)
+        return result
+
 
     def get(self, instruments, start=0, end=None):
         """
@@ -286,6 +304,37 @@ class Music(object):
         harmonic change pace
         breath pace
         '''
+
+    # def wedge(self):
+    #     entrance_order = [self.instruments[index] for index in random.shuffle(range(len(self.instruments)))]
+
+    #     solo = entrance_order[0]
+    #     accompanists = entrance_order[1:]
+    #     bass = self.bass
+
+    #     # solo ascending
+    #     # bass descending
+    #     # for rest of accompanists, pick ascending or descending randomly
+    #     # solo should ascend pretty high in the instrument range
+    #     # bass should descend most of the way down
+    #     # everyone else should be more reserved
+    #     solo.direction = 'ascending'
+    #     for instrument in accompanists:
+    #         instrument.direction = random.choice(['ascending', 'descending'])
+    #     bass.direction = 'descending'
+
+
+    #     length, remainder = divmod(len(solo.range), 5)
+
+    #     utils.group(len(solo.range), 5)
+    #     solo.range
+    #     solo.starting_register_center = random.
+
+
+    #     for instrument in entrance_order:
+    #         instrument.pace = random.choice([.5, 1, 1, 2])
+
+
 
 
 def main():
