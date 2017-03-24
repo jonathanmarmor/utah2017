@@ -20,6 +20,13 @@ def beats_to_seconds(beats, bpm=60):
     return beats / (bpm / 60.0)
 
 
+def is_harmony_allowed(pitches):
+
+
+
+    return True
+
+
 class Tick(object):
     def __init__(self, tick):
         self.tick = tick
@@ -334,7 +341,16 @@ class Music(object):
     #     for instrument in entrance_order:
     #         instrument.pace = random.choice([.5, 1, 1, 2])
 
+    def check_fragment(self, start, end):
+        allowed = []
+        for tick in xrange(int(start * 12), int(end * 12)):
+            tick = tick / 12.0
+            notes = self.get_at_tick(tick)
 
+            pitches = [notes[name].pitch for name in notes]
+
+            allowed.append(is_harmony_allowed(pitches))
+        return all(allowed)
 
 
 def main():
