@@ -20,11 +20,60 @@ def beats_to_seconds(beats, bpm=60):
     return beats / (bpm / 60.0)
 
 
+def pitches_to_pitchclasses(pitches):
+    pitchclasses = [p % 12 for p in pitches]
+    pitchclasses = list(set(pitchclasses))
+    pitchclasses.sort()
+    pitchclasses = tuple(pitchclasses)
+    return pitchclasses
+
+
+def get_inversions(pitchclasses):
+    inversions = []
+    for p1 in pitchclasses:
+        inversion = [(p2 - p1) % 12 for p2 in pitchclasses]
+        inversion.sort()
+        inversions.append(tuple(inversion))
+    return inversions
+
+
+def make_allowed_harmonies():
+    allowed_harmonies_1st_inversions = [
+        # Just a quick draft
+        (0, 4, 7),
+        (0, 3, 7),
+        (0, 5, 7),
+        (0, 3, 5),
+        (0, 2, 5),
+        (0, 3, 6),
+        (0, 4, 8),
+        (0, 4, 7, 11),
+        (0, 4, 7, 10),
+        (0, 3, 7, 10),
+        (0, 5, 7, 10),
+        (0, 2, 5, 7),
+        (0, 2, 4, 7),
+        (0, 2, 3, 7),
+        (0, 3, 5, 7),
+        (0, 2, 4, 7, 11),
+        (0, 2, 4, 7, 10),
+        (0, 2, 3, 7, 10),
+        (0, 2, 4, 5, 7, 11),
+        (0, 2, 4, 5, 7, 10),
+        (0, 2, 3, 5, 7, 10),
+    ]
+    allowed_harmonies = []
+    for harmony in allowed_harmonies_1st_inversions:
+        inversions = get_inversions(harmony)
+        allowed_harmonies.extend(inversions)
+    return allowed_harmonies
+
+
+allowed_harmonies = make_allowed_harmonies()
+
+
 def is_harmony_allowed(pitches):
-
-
-
-    return True
+    return tuple(pitches_to_pitchclasses(pitches)) in allowed_harmonies
 
 
 class Tick(object):
@@ -105,71 +154,6 @@ class Music(object):
         for instrument in self.instruments:
             result[instrument.name] = instrument.get_at_tick(tick)
         return result
-
-
-    def get(self, instruments, start=0, end=None):
-        """
-            m = Music()
-
-            # == Instrument selection ==
-
-            # No args gets all instruments
-            >>> m.get()
-            {'alto_saxophone': [],
-             'bass': [],
-             'clarinet': [],
-             'flute': [],
-             'oboe': [],
-             'trumpet': [],
-             'violin': []}
-
-            # One instrument name string gets that part, not wrapped in a dict
-            >>> m.get('oboe')
-            []
-
-            # Two or more instrument name strings gets those parts, wrapped in a dict
-            >>> m.get('oboe', 'bass')
-            {'bass': [],
-             'oboe': []}
-
-            # Two or more instrument name strings in a list or tuple gets those  parts, wrapped in a dict
-            >>> m.get(['oboe', 'bass'])
-            {'bass': [],
-             'oboe': []}
-
-            # == time slices ==
-
-            >>> m = Music()
-            >>> for i in m.instrument_names:
-                m.grid[i] = ['{}{}'.format(i[0], str(x)) for x in range(5)]
-
-            # No args get all instruments' complete parts
-            >>> m.get()
-            {'alto_saxophone': ['a0', 'a1', 'a2', 'a3', 'a4'],
-             'bass': ['b0', 'b1', 'b2', 'b3', 'b4'],
-             'clarinet': ['c0', 'c1', 'c2', 'c3', 'c4'],
-             'flute': ['f0', 'f1', 'f2', 'f3', 'f4'],
-             'oboe': ['o0', 'o1', 'o2', 'o3', 'o4'],
-             'trumpet': ['t0', 't1', 't2', 't3', 't4'],
-             'violin': ['v0', 'v1', 'v2', 'v3', 'v4']}
-
-            # No instrument args, and one
-            >>> m.get(1)
-
-
-        """
-
-        if instruments is 'all':
-            instruments = self.instrument_names
-        if end is None:
-            end = self.duration()
-
-        result = {}
-        for i in instruments:
-            result[i] = self.grid[i][start:end]
-
-        return result
-        # return {i:self.grid[i][start:end] for i in instruments}
 
     def notate(self):
         self.notation = Notation(
