@@ -236,38 +236,6 @@ class Music(object):
 
                 tick = instrument.get_tick()
 
-    def make_random_notes_with_harmony_control(self):
-        mode = [0, 2, 4, 5, 7, 9, 11]
-        root = random.choice(range(12))
-
-        scales = []
-        for _ in range(8):
-            root_change = random.choice([-1, 1, 6])
-            root = (root + root_change) % 12
-            scale = [(root + p) % 12 for p in mode]
-            scales.append(scale)
-
-        for instrument in self.instruments:
-            previous_pitch = instrument.range[len(instrument.range) / 2]
-
-            tick = instrument.get_tick()
-            while tick.bar_number <= 16:
-                scale == scales[tick.bar_number / 4]
-
-                if random.random() > .5:
-                    pitch = None
-                    duration = random.choice([1, 1.5, 2])
-                else:
-                    pitch_options = range(previous_pitch - 3, previous_pitch + 4)
-                    pitch_options.remove(previous_pitch)
-                    pitch_options = [p for p in instrument.range if p in pitch_options and p % 12 in scale]
-                    pitch = random.choice(pitch_options)
-                    duration = random.randint(1, 8) / 2.0
-
-                instrument.add_note(pitch, duration)
-
-                tick = instrument.get_tick()
-
     def big_chord(self):
         mode = [0, 2, 4, 5, 7, 9, 11]
         root = random.choice([0, 7, 5, 2, 10])  # easier keys on C instruments
@@ -363,19 +331,43 @@ class Music(object):
             tick = tick / 12.0
             notes = self.get_at_tick(tick)
 
-
             all_pitches = []
             for name in notes:
                 pitches = notes[name].pitch
                 if pitches is not 'rest' and pitches is not None:
-                    if isinstance(list, pitches):
+                    if isinstance(pitches, list):
                         all_pitches.extend(pitches)
                     else:
                         all_pitches.append(pitches)
 
-
-            allowed.append(is_harmony_allowed(pitches))
+            allowed.append(is_harmony_allowed(all_pitches))
         return all(allowed)
+
+    def make_fragments(self):
+        # get earliest
+
+        entrances = []
+        for instrument in self.instruments:
+            entrances.append(instrument.duration())
+
+        earliest = min(entrances)
+
+        # for each instrument, get the fragment from earliest to that instrument's entrance
+        # copy the notes from the instrument in that window, truncating the first note if it doesn't start at earliest
+
+        # instantiate a new Music object for the fragment
+        # generate 10 versions of some new notes to fill out the fragment for each instrument
+        # Go through all the combinations of instrument parts and test if they are allowed by the harmony check
+        # randomly choose from the ones that are ok, if any
+
+
+
+
+
+        diffs = [e - earliest for e in entrances]
+        for instrument, diff in zip(self.instruments, diffs):
+
+
 
 
 def main():
