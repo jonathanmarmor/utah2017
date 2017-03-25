@@ -51,6 +51,26 @@ def pairwise(iterable):
     return itertools.izip(a, b)
 
 
+def n_wise(iterable, n):
+    """Iterate through `iterable` in groups of `n` items.
+
+    >>> list(n_wise(range(5), 2))
+    [(0, 1), (1, 2), (2, 3), (3, 4)]
+
+    >>> list(n_wise(range(5), 3))
+    [(0, 1, 2), (1, 2, 3), (2, 3, 4)]
+
+    >>> list(n_wise(range(5), 4))
+    [(0, 1, 2, 3), (1, 2, 3, 4)]
+
+    """
+    iterators = itertools.tee(iterable, n)
+    for index, iterator in enumerate(iterators):
+        for _ in range(index):
+            next(iterator, None)
+    return itertools.izip(*iterators)
+
+
 def ngrams(iterable, n):
     """
     >>> list(ngrams(range(6), 3))

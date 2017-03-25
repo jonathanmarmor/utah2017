@@ -8,6 +8,10 @@ from instrument_data import instrument_data
 import utils
 
 
+def range16ths(start, end, step=.25):
+    return [n / 4.0 for n in xrange(int(start * 4), int(end * 4), int(step * 4))]
+
+
 def meter_position(tick):
     position_within_beat, beat = math.modf(tick)
     beat = int(beat)
@@ -204,7 +208,7 @@ class Music(object):
         ]
         self.sx.extend([Note(*n) for n in notes])
 
-    def make_random_notes(self):
+    def make_random_notes(self, n_bars=16):
         mode = [0, 2, 4, 5, 7, 9, 11]
         root = random.choice(range(12))
 
@@ -219,7 +223,7 @@ class Music(object):
             previous_pitch = instrument.range[len(instrument.range) / 2]
 
             tick = instrument.get_tick()
-            while tick.bar_number <= 16:
+            while tick.bar_number <= n_bars:
                 scale == scales[tick.bar_number / 4]
 
                 if random.random() > .5:
@@ -343,37 +347,105 @@ class Music(object):
             allowed.append(is_harmony_allowed(all_pitches))
         return all(allowed)
 
+    def make_lick(self, instrument, total_duration=4.0):
+        if random.random() < .5:
+            opening_rest_duration = random.choice([0.5, 0.5, 1, 1, 1, 1.5, 2, 2, 2.5])
+            instrument.add_note(None, opening_rest_duration)
+
+        remaining = total_duration - instrument.duration()
+
+        lick_total_duration_options = range16ths(1.5, remaining + .5, .5)
+        lick_total_duration = random.choice(lick_total_duration_options)
+
+        # how many attacks?
+        n_attacks = random.choice(range(1, int(lick_total_duration * 2)))
+
+        # The first attack is in the first index
+        attack_indexes = [0]
+        attack_index_options = range(1, int(lick_total_duration * 2))
+
+        # pick starting point of the rest of the attacks
+        for _ in range(n_attacks - 1):
+            i = random.choice(attack_index_options)
+            attack_indexes.append(i)
+            attack_index_options.remove(i)
+
+        attack_indexes.sort()
+
+        # Get durations of each note
+        attack_indexes.append(int(lick_total_duration * 2))
+        durations = []
+        for start, end in utils.n_wise(attack_indexes, 2):
+            duration = end - start
+            durations.append(duration / 2.0)
+
+        for d in durations:
+
+            # Temporary. Pick a random pitch.
+            pitch = random.choice(instrument.range[7:-7])
+
+            instrument.add_note(pitch, d)
+
+
+        remaining = total_duration - instrument.duration()
+        if remaining:
+            instrument.add_note(None, remaining)
+
+        return instrument
+
+    def make_phrase(self):
+        # For now, just make one note
+        pitch = random.choice(range(60, 73))
+        phrase = [Note(pitch, 1.0)]
+
+        return phrase
+
+    def extend_with_fragment(self, fragment):
+        for fragment_instrument in fragment.instruments:
+            instrument = self.grid[fragment_instrument.name]
+            instrument.extend(fragment_instrument)
+
     def make_fragments(self):
-        # get earliest
 
-        entrances = []
-        for instrument in self.instruments:
-            entrances.append(instrument.duration())
+        fragment = Music()
+        for fragment_instrument in fragment.instruments:
+            self.make_lick(fragment_instrument, 4.0)
 
-        earliest = min(entrances)
 
-        # for each instrument, get the fragment from earliest to that instrument's entrance
-        # copy the notes from the instrument in that window, truncating the first note if it doesn't start at earliest
-
-        # instantiate a new Music object for the fragment
-        # generate 10 versions of some new notes to fill out the fragment for each instrument
-        # Go through all the combinations of instrument parts and test if they are allowed by the harmony check
-        # randomly choose from the ones that are ok, if any
+        for _ in range(16):
+            self.extend_with_fragment(fragment)
 
 
 
+        # # get earliest
+
+        # entrances = []
+        # for instrument in self.instruments:
+        #     entrances.append(instrument.duration())
+
+        # earliest = min(entrances)
+
+        # # for each instrument, get the fragment from earliest to that instrument's entrance
+        # # copy the notes from the instrument in that window, truncating the first note if it doesn't start at earliest
+
+        # # instantiate a new Music object for the fragment
+        # # generate 10 versions of some new notes to fill out the fragment for each instrument
+        # # Go through all the combinations of instrument parts and test if they are allowed by the harmony check
+        # # randomly choose from the ones that are ok, if any
 
 
-        diffs = [e - earliest for e in entrances]
-        for instrument, diff in zip(self.instruments, diffs):
 
 
+
+        # diffs = [e - earliest for e in entrances]
+        # for instrument, diff in zip(self.instruments, diffs):
 
 
 def main():
     music = Music()
 
-    music.big_chord()
+    music.make_fragments()
+    # music.big_chord()
     # music.make_random_notes()
     # music.september_song()
 
