@@ -329,7 +329,10 @@ class Music(object):
     #     for instrument in entrance_order:
     #         instrument.pace = random.choice([.5, 1, 1, 2])
 
-    def check_fragment(self, start, end):
+    def check_fragment(self, start=0, end=None):
+        if end is None:
+            end = self.duration()
+
         allowed = []
         for tick in xrange(int(start * 12), int(end * 12)):
             tick = tick / 12.0
@@ -347,12 +350,12 @@ class Music(object):
             allowed.append(is_harmony_allowed(all_pitches))
         return all(allowed)
 
-    def make_lick(self, instrument, total_duration=4.0):
+    def make_lick(self, instrument, duration=4.0, scale=[0, 2, 4, 5, 7, 9, 11]):
         if random.random() < .5:
-            opening_rest_duration = random.choice([0.5, 0.5, 1, 1, 1, 1.5, 2, 2, 2.5])
+            opening_rest_duration = random.choice(range16ths(.5, duration - 1.5, .5))
             instrument.add_note(None, opening_rest_duration)
 
-        remaining = total_duration - instrument.duration()
+        remaining = duration - instrument.duration()
 
         lick_total_duration_options = range16ths(1.5, remaining + .5, .5)
         lick_total_duration = random.choice(lick_total_duration_options)
@@ -376,18 +379,18 @@ class Music(object):
         attack_indexes.append(int(lick_total_duration * 2))
         durations = []
         for start, end in utils.n_wise(attack_indexes, 2):
-            duration = end - start
-            durations.append(duration / 2.0)
+            dur = end - start
+            durations.append(dur / 2.0)
 
         for d in durations:
 
             # Temporary. Pick a random pitch.
-            pitch = random.choice(instrument.range[7:-7])
+            pitch = random.choice([p for p in instrument.range[7:-8] if p % 12 in scale])
 
             instrument.add_note(pitch, d)
 
 
-        remaining = total_duration - instrument.duration()
+        remaining = duration - instrument.duration()
         if remaining:
             instrument.add_note(None, remaining)
 
@@ -405,40 +408,65 @@ class Music(object):
             instrument = self.grid[fragment_instrument.name]
             instrument.extend(fragment_instrument)
 
-    def make_fragments(self):
-
+    def make_fragment(self, duration=4.0, scale=[0, 2, 4, 5, 7, 9, 11]):
         fragment = Music()
         for fragment_instrument in fragment.instruments:
-            self.make_lick(fragment_instrument, 4.0)
+            self.make_lick(fragment_instrument, duration=duration, scale=scale)
+        return fragment
+
+    def make_fragments(self):
+
+        for a in range(4):
+
+            fragment1 = self.make_fragment()
+
+            for _ in range(4):
+                self.extend_with_fragment(fragment1)
+
+            fragment2 = self.make_fragment()
+
+            for _ in range(4):
+                self.extend_with_fragment(fragment2)
+
+            for _ in range(2):
+                self.extend_with_fragment(fragment1)
+
+            for _ in range(2):
+                self.extend_with_fragment(fragment2)
+
+        for a in range(4):
+
+            fragment3 = self.make_fragment(scale=[7, 9, 11, 0, 2, 4, 6])
+            print 'is fragment #3 ok? {}'.format(fragment3.check_fragment())
+
+            for _ in range(4):
+                self.extend_with_fragment(fragment3)
+
+            fragment4 = self.make_fragment(duration=3.0, scale=[2, 4, 6, 7, 9, 11, 1])
+            print 'is fragment #4 ok? {}'.format(fragment4.check_fragment())
+
+            for _ in range(4):
+                self.extend_with_fragment(fragment4)
+
+            for _ in range(2):
+                self.extend_with_fragment(fragment3)
+
+            for _ in range(2):
+                self.extend_with_fragment(fragment4)
 
 
-        for _ in range(16):
-            self.extend_with_fragment(fragment)
+        for a in range(2):
+            for _ in range(4):
+                self.extend_with_fragment(fragment1)
 
+            for _ in range(4):
+                self.extend_with_fragment(fragment2)
 
+            for _ in range(2):
+                self.extend_with_fragment(fragment1)
 
-        # # get earliest
-
-        # entrances = []
-        # for instrument in self.instruments:
-        #     entrances.append(instrument.duration())
-
-        # earliest = min(entrances)
-
-        # # for each instrument, get the fragment from earliest to that instrument's entrance
-        # # copy the notes from the instrument in that window, truncating the first note if it doesn't start at earliest
-
-        # # instantiate a new Music object for the fragment
-        # # generate 10 versions of some new notes to fill out the fragment for each instrument
-        # # Go through all the combinations of instrument parts and test if they are allowed by the harmony check
-        # # randomly choose from the ones that are ok, if any
-
-
-
-
-
-        # diffs = [e - earliest for e in entrances]
-        # for instrument, diff in zip(self.instruments, diffs):
+            for _ in range(2):
+                self.extend_with_fragment(fragment2)
 
 
 def main():
