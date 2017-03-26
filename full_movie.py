@@ -44,6 +44,11 @@ def get_inversions(pitchclasses):
 def make_allowed_harmonies():
     allowed_harmonies_1st_inversions = [
         # Just a quick draft
+        (0, ),
+        (0, 2),
+        (0, 3),
+        (0, 4),
+        (0, 5),
         (0, 4, 7),
         (0, 3, 7),
         (0, 5, 7),
@@ -51,6 +56,8 @@ def make_allowed_harmonies():
         (0, 2, 5),
         (0, 3, 6),
         (0, 4, 8),
+        (0, 2, 4),
+        (0, 2, 6),
         (0, 4, 7, 11),
         (0, 4, 7, 10),
         (0, 3, 7, 10),
@@ -59,9 +66,12 @@ def make_allowed_harmonies():
         (0, 2, 4, 7),
         (0, 2, 3, 7),
         (0, 3, 5, 7),
+        (0, 3, 6, 9),
+        (0, 2, 4, 8),
         (0, 2, 4, 7, 11),
         (0, 2, 4, 7, 10),
         (0, 2, 3, 7, 10),
+        (0, 2, 4, 6, 8, 10),
         (0, 2, 4, 5, 7, 11),
         (0, 2, 4, 5, 7, 10),
         (0, 2, 3, 5, 7, 10),
@@ -415,58 +425,14 @@ class Music(object):
         return fragment
 
     def make_fragments(self):
+        for count in range(10000):
+            fragment = self.make_fragment(scale=[0, 2, 4, 5, 7, 9, 11])
+            print count,
 
-        for a in range(4):
-
-            fragment1 = self.make_fragment()
-
-            for _ in range(4):
-                self.extend_with_fragment(fragment1)
-
-            fragment2 = self.make_fragment()
-
-            for _ in range(4):
-                self.extend_with_fragment(fragment2)
-
-            for _ in range(2):
-                self.extend_with_fragment(fragment1)
-
-            for _ in range(2):
-                self.extend_with_fragment(fragment2)
-
-        for a in range(4):
-
-            fragment3 = self.make_fragment(scale=[7, 9, 11, 0, 2, 4, 6])
-            print 'is fragment #3 ok? {}'.format(fragment3.check_fragment())
-
-            for _ in range(4):
-                self.extend_with_fragment(fragment3)
-
-            fragment4 = self.make_fragment(duration=3.0, scale=[2, 4, 6, 7, 9, 11, 1])
-            print 'is fragment #4 ok? {}'.format(fragment4.check_fragment())
-
-            for _ in range(4):
-                self.extend_with_fragment(fragment4)
-
-            for _ in range(2):
-                self.extend_with_fragment(fragment3)
-
-            for _ in range(2):
-                self.extend_with_fragment(fragment4)
-
-
-        for a in range(2):
-            for _ in range(4):
-                self.extend_with_fragment(fragment1)
-
-            for _ in range(4):
-                self.extend_with_fragment(fragment2)
-
-            for _ in range(2):
-                self.extend_with_fragment(fragment1)
-
-            for _ in range(2):
-                self.extend_with_fragment(fragment2)
+            if fragment.check_fragment():
+                print
+                print 'Whoa!!!!'
+                self.extend_with_fragment(fragment)
 
 
 def main():
