@@ -45,7 +45,7 @@ def make_allowed_harmonies():
     allowed_harmonies_1st_inversions = [
         # Just a quick draft
         (0, ),
-        (0, 2),
+        # (0, 2),
         (0, 3),
         (0, 4),
         (0, 5),
@@ -54,10 +54,10 @@ def make_allowed_harmonies():
         (0, 5, 7),
         (0, 3, 5),
         (0, 2, 5),
-        (0, 3, 6),
-        (0, 4, 8),
-        (0, 2, 4),
-        (0, 2, 6),
+        # (0, 3, 6),
+        # (0, 4, 8),
+        # (0, 2, 4),
+        # (0, 2, 6),
         (0, 4, 7, 11),
         (0, 4, 7, 10),
         (0, 3, 7, 10),
@@ -66,20 +66,25 @@ def make_allowed_harmonies():
         (0, 2, 4, 7),
         (0, 2, 3, 7),
         (0, 3, 5, 7),
-        (0, 3, 6, 9),
-        (0, 2, 4, 8),
+        # (0, 3, 6, 9),
+        # (0, 2, 4, 8),
         (0, 2, 4, 7, 11),
         (0, 2, 4, 7, 10),
         (0, 2, 3, 7, 10),
-        (0, 2, 4, 6, 8, 10),
-        (0, 2, 4, 5, 7, 11),
-        (0, 2, 4, 5, 7, 10),
-        (0, 2, 3, 5, 7, 10),
+        # (0, 2, 4, 6, 8, 10),
+        # (0, 2, 4, 5, 7, 11),
+        # (0, 2, 4, 5, 7, 10),
+        # (0, 2, 3, 5, 7, 10),
     ]
     allowed_harmonies = []
     for harmony in allowed_harmonies_1st_inversions:
-        inversions = get_inversions(harmony)
-        allowed_harmonies.extend(inversions)
+        for root in range(12):
+            transposed_harmony = tuple([(p + root) % 12 for p in harmony])
+            allowed_harmonies.append(transposed_harmony)
+
+    # for harmony in allowed_harmonies_1st_inversions:
+    #     inversions = get_inversions(harmony)
+    #     allowed_harmonies.extend(inversions)
     return allowed_harmonies
 
 
@@ -373,6 +378,10 @@ class Music(object):
         # how many attacks?
         n_attacks = random.choice(range(1, int(lick_total_duration * 2)))
 
+        n_attacks_options = range(1, int(lick_total_duration * 2))
+        n_attacks_weights = range(1, len(n_attacks_options) + 1)
+        n_attacks = utils.weighted_choice(n_attacks_options, n_attacks_weights)
+
         # The first attack is in the first index
         attack_indexes = [0]
         attack_index_options = range(1, int(lick_total_duration * 2))
@@ -406,13 +415,6 @@ class Music(object):
 
         return instrument
 
-    def make_phrase(self):
-        # For now, just make one note
-        pitch = random.choice(range(60, 73))
-        phrase = [Note(pitch, 1.0)]
-
-        return phrase
-
     def extend_with_fragment(self, fragment):
         for fragment_instrument in fragment.instruments:
             instrument = self.grid[fragment_instrument.name]
@@ -420,13 +422,32 @@ class Music(object):
 
     def make_fragment(self, duration=4.0, scale=[0, 2, 4, 5, 7, 9, 11]):
         fragment = Music()
-        for fragment_instrument in fragment.instruments:
-            self.make_lick(fragment_instrument, duration=duration, scale=scale)
+
+        n_instruments = utils.weighted_choice(range(2, 8), [w ** 3 for w in range(2, 8)])
+        instruments = random.sample(fragment.instruments, n_instruments)
+
+        for instrument in instruments:
+            self.make_lick(instrument, duration=duration, scale=scale)
+
+        resting_instruments = [i for i in fragment.instruments if i not in instruments]
+
+        # Put rests in instruments that aren't playing
+        for resting_instrument in resting_instruments:
+            resting_instrument.add_note(None, duration)
+
         return fragment
 
     def make_fragments(self):
-        for count in range(10000):
-            fragment = self.make_fragment(scale=[0, 2, 4, 5, 7, 9, 11])
+        for count in range(50000):
+
+            scale = range(12)
+            # for _ in range(random.randint(0, 5)):
+            #     pc = random.choice(scale)
+            #     scale.remove(pc)
+
+            duration = random.choice([3, 3, 4, 4, 4, 4, 4, 5, 6, 8])
+
+            fragment = self.make_fragment(duration=duration, scale=scale)
             print count,
 
             if fragment.check_fragment():

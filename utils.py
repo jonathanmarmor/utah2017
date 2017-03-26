@@ -1,7 +1,19 @@
 """Miscellaneous utils."""
 
+import random
 import itertools
 from collections import Counter
+
+
+def weighted_choice(options, weights):
+    """Choose an item from options using weights."""
+    sum_of_weights = sum(weights)
+    rand = random.uniform(0, sum_of_weights)
+    total = 0
+    for item, weight in zip(options, weights):
+        total += weight
+        if rand < total:
+            return item
 
 
 def group(iterable, n):
