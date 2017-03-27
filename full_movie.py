@@ -113,8 +113,26 @@ class Note(object):
 class Instrument(list):
     def __init__(self, inst_name):
         self.name = inst_name
-        self.range = instrument_data[self.name]['range']
         self.abbreviation = instrument_data[self.name]['abbreviation']
+        self.range = instrument_data[self.name]['range']
+        self._make_registers()
+
+    def _make_registers(self, n_chunks=7):
+        separators = []
+        for i in range(int(n_chunks) + 1):
+            separator = i * (len(self.range) / float(n_chunks))
+            separators.append(separator)
+
+        registers = []
+        for a, b in utils.pairwise(separators):
+            chunk = [p for i, p in enumerate(self.range) if a <= i < b]
+            registers.append(chunk)
+
+        self.middle_register = registers[3]  # assuming 7 divisions
+        self.highest_register = registers[-1]
+        self.lowest_register = registers[0]
+        self.safe_register = utils.flatten(registers[1:-1])
+        self.very_safe_register = utils.flatten(registers[2:-2])
 
     def duration(self):
         return sum([note.duration for note in self])

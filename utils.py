@@ -175,6 +175,11 @@ def fibonacci(n):
     return a
 
 
+def flatten(l):
+    """flatten a (shallow) list of lists of items"""
+    return [item for sublist in l for item in sublist]
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
