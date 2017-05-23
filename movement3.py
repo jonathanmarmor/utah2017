@@ -71,9 +71,9 @@ class Movement3(object):
         self.music.notate()
 
     def first(self):
-        self.music.ob.add_note(pitch=72, duration=1.0)
-        self.music.cl.add_note(pitch=73, duration=1.0)
-        self.music.f.add_note(pitch=74, duration=1.0)
+        self.music.ob.add_note(pitch=72, duration=random.choice([2, 3, 4]))
+        self.music.cl.add_note(pitch=73, duration=random.choice([2, 3, 4]))
+        self.music.f.add_note(pitch=74, duration=random.choice([2, 3, 4]))
 
     def go(self, ticks=50):
         for tick in range(ticks):
@@ -87,11 +87,11 @@ class Movement3(object):
         total_event_duration = 0.0
         if random.random() < .5:
             # Add a rest before the next note
-            rest_duration = random.choice([1, 2])
+            rest_duration = random.choice([1, 1, 1, 2, 2, 3])
             total_event_duration += rest_duration
             changing.add_note(pitch='rest', duration=rest_duration)
 
-        note_duration = random.choice([2, 3])
+        note_duration = random.choice([1, 1, 2])
         total_event_duration += note_duration
         changing.add_note(pitch=new_pitch, duration=note_duration)
 
@@ -106,8 +106,15 @@ class Movement3(object):
         # intervals = get_intervals(previous_chord)
 
 
-        weights = [inst.beats_since_last_rest() + 1 for inst in self.winds]
-        # print weights
+        weights = []
+        for inst in self.winds:
+            sustain_time = inst.beats_since_last_rest() * (60.0 / self.music.starting_tempo_bpm)
+
+            # weight = (inst.beats_since_last_rest() + 1) ** 2.0
+            weight = sustain_time ** 2
+            weights.append(weight)
+
+        print weights
         changing = weighted_choice(self.winds, weights)
 
         # changing = random.choice(self.winds)
@@ -146,11 +153,11 @@ class Movement3(object):
 
                 weights.append(weight)
 
-                print harmony, weight
+                # print harmony, weight
 
         new_pitch = weighted_choice(pitch_options, weights)
         # new_pitch = random.choice(pitch_options)
-        print
+        # print
 
 
 
