@@ -84,18 +84,19 @@ class Movement3(object):
 
         new_pitch = self.pick_new_pitch(changing, not_changing)
 
-
+        total_event_duration = 0.0
         if random.random() < .5:
             # Add a rest before the next note
-            changing.add_note(pitch='rest', duration=1.0)
-            changing.add_note(pitch=new_pitch, duration=1.0)
-            duration = 2.0
-        else:
-            changing.add_note(pitch=new_pitch, duration=1.0)
-            duration = 1.0
+            rest_duration = 1.0  # TODO: randomize
+            total_event_duration += rest_duration
+            changing.add_note(pitch='rest', duration=rest_duration)
+
+        note_duration = 1.0  # TODO: randomize
+        total_event_duration += note_duration
+        changing.add_note(pitch=new_pitch, duration=note_duration)
 
         for i in not_changing:
-            i[-1].duration += duration
+            i[-1].duration += total_event_duration
 
 
     def pick_changing_instrument(self):
