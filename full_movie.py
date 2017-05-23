@@ -45,8 +45,8 @@ def make_allowed_harmonies():
     allowed_harmonies_1st_inversions = [
         # Just a quick draft
         (0, ),
-        (0, 2),
-        (0, 3),
+        # (0, 2),
+        # (0, 3),
         (0, 4),
         (0, 5),
         (0, 4, 7),
@@ -54,10 +54,10 @@ def make_allowed_harmonies():
         (0, 5, 7),
         (0, 3, 5),
         (0, 2, 5),
-        (0, 3, 6),
-        (0, 4, 8),
+        # (0, 3, 6),
+        # (0, 4, 8),
         (0, 2, 4),
-        (0, 2, 6),
+        # (0, 2, 6),
         (0, 4, 7, 11),
         (0, 4, 7, 10),
         (0, 3, 7, 10),
@@ -66,8 +66,8 @@ def make_allowed_harmonies():
         (0, 2, 4, 7),
         (0, 2, 3, 7),
         (0, 3, 5, 7),
-        (0, 3, 6, 9),
-        (0, 2, 4, 8),
+        # (0, 3, 6, 9),
+        # (0, 2, 4, 8),
         (0, 2, 4, 7, 11),
         (0, 2, 4, 7, 10),
         (0, 2, 3, 7, 10),
@@ -117,7 +117,13 @@ class Instrument(list):
         self.range = instrument_data[self.name]['range']
         self._make_registers()
 
+    def __repr__(self):
+        return '<full_movie.Instrument: {}>'.format(self.name)
+
     def _make_registers(self, n_chunks=7):
+        self.lowest_note = self.range[0]
+        self.highest_note = self.range[-1]
+
         separators = []
         for i in range(int(n_chunks) + 1):
             separator = i * (len(self.range) / float(n_chunks))
@@ -394,11 +400,24 @@ class Music(object):
         lick_total_duration = random.choice(lick_total_duration_options)
 
         # how many attacks?
-        n_attacks = random.choice(range(1, int(lick_total_duration * 2)))
+        n_attacks = 1
+        if random.random() < .3:
+            n_attacks = 2
 
-        n_attacks_options = range(1, int(lick_total_duration * 2))
-        n_attacks_weights = range(1, len(n_attacks_options) + 1)
-        n_attacks = utils.weighted_choice(n_attacks_options, n_attacks_weights)
+        if random.random() < .2:
+            n_attacks_options = range(1, int(lick_total_duration * 2))
+            n_attacks_weights = range(1, len(n_attacks_options) + 1)
+            n_attacks = utils.weighted_choice(n_attacks_options, n_attacks_weights)
+
+
+        # if random.random() < .2:
+        #     n_attacks = 1
+        # else:
+        #     n_attacks_options = range(1, int(lick_total_duration * 2))
+        #     n_attacks_weights = range(1, len(n_attacks_options) + 1)
+        #     n_attacks = utils.weighted_choice(n_attacks_options, n_attacks_weights)
+
+
 
         # The first attack is in the first index
         attack_indexes = [0]
@@ -419,10 +438,24 @@ class Music(object):
             dur = end - start
             durations.append(dur / 2.0)
 
+
+        range_in_key = [p for p in instrument.range[7:-8] if p % 12 in scale]
+
+        # set starting pitch anchor
+        initial_pitch = random.choice(range_in_key)
+        pitch = initial_pitch
         for d in durations:
 
-            # Temporary. Pick a random pitch.
-            pitch = random.choice([p for p in instrument.range[7:-8] if p % 12 in scale])
+            i = range_in_key.index(pitch)
+            # movement = random.choice([-1, -1, -1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2])
+            movement = random.choice([-1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+            try:
+                pitch = range_in_key[i + movement]
+            except IndexError:
+                pitch = initial_pitch
+
+            # # Temporary. Pick a random pitch.
+            # pitch = random.choice([p for p in instrument.range[7:-8] if p % 12 in scale])
 
             instrument.add_note(pitch, d)
 
@@ -438,10 +471,12 @@ class Music(object):
             instrument = self.grid[fragment_instrument.name]
             instrument.extend(fragment_instrument)
 
-    def make_fragment(self, duration=4.0, scale=[0, 2, 4, 5, 7, 9, 11]):
+    def make_fragment(self, duration=4.0, scale=[0, 2, 4, 5, 7, 9, 11], n_instruments=8):
         fragment = Music()
 
-        n_instruments = utils.weighted_choice(range(2, 8), [w ** 3 for w in range(2, 8)])
+
+        # n_instruments = utils.weighted_choice(n_instruments_options, [w ** 3 for w in n_instruments_options])
+
         instruments = random.sample(fragment.instruments, n_instruments)
 
         for instrument in instruments:
@@ -456,22 +491,55 @@ class Music(object):
         return fragment
 
     def make_fragments(self):
-        for count in range(50000):
+        scale = [0, 2, 4, 5, 7, 9, 11]
 
-            scale = range(12)
+        n_instruments = 1
+
+        for count in range(2500):
+
+            if random.random() < .15:
+                # Change keys
+                switch = random.random()
+                if switch < .6:
+                    # Go up a fifth
+                    scale = [(p + 7) % 12 for p in scale]
+                elif switch < .9:
+                    # Go down a fifth
+                    scale = [(p - 7) % 12 for p in scale]
+                elif switch < .95:
+                    # Go up a whole step
+                    scale = [(p + 2) % 12 for p in scale]
+                else:
+                    # Go down a whole step
+                    scale = [(p - 2) % 12 for p in scale]
+
+
+            # scale = [0, 2, 4, 7, 9]
+            # scale = range(12)
             # for _ in range(random.randint(0, 5)):
             #     pc = random.choice(scale)
             #     scale.remove(pc)
 
-            duration = random.choice([3, 3, 4, 4, 4, 4, 4, 5, 6, 8])
+            duration = random.choice([3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 6, 6, 6, 7, 8, 8, 8])
 
-            fragment = self.make_fragment(duration=duration, scale=scale)
+
+            n_instruments_candidate = n_instruments
+
+            if random.random() < .3:
+                if n_instruments_candidate == 7:
+                    n_instruments_candidate = 1
+                else:
+                    n_instruments_candidate += 1
+
+            fragment = self.make_fragment(duration=duration, scale=scale, n_instruments=n_instruments_candidate)
             print count,
 
             if fragment.check_fragment():
                 print
                 print 'Whoa!!!!'
                 self.extend_with_fragment(fragment)
+                n_instruments = n_instruments_candidate
+
 
 
 def main():
