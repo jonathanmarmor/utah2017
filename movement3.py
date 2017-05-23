@@ -22,8 +22,7 @@ ALLOWED_HARMONIES = {
     (0, 5, 6): 0.125,
 }
 
-
-DISTANCE_WEIGHTS = [1.0 / 3] + [1.0 / (2.0 ** x) for x in range(30)]
+DISTANCE_WEIGHTS = [.25, 1.0, .8, ] + [1.0 / (2.0 ** x) for x in range(3, 30)]
 
 
 def get_intervals(pitches):
@@ -117,7 +116,7 @@ class Movement3(object):
                 harmony_weight = ALLOWED_HARMONIES[harmony]
 
                 # weight the different weights
-                weight = (distance_weight * 1.0) + (harmony_weight * 1.0)
+                weight = (distance_weight * 1.0) + (harmony_weight * .25)
 
                 weights.append(weight)
 
