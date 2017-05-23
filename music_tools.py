@@ -117,7 +117,7 @@ class Instrument(list):
         self._make_registers()
 
     def __repr__(self):
-        return '<full_movie.Instrument: {}>'.format(self.name)
+        return '<music_tools.Instrument: {}>'.format(self.name)
 
     def _make_registers(self, n_chunks=7):
         self.lowest_note = self.range[0]
@@ -154,6 +154,20 @@ class Instrument(list):
             if duration <= tick < duration + note.duration:
                 return note
             duration += note.duration
+
+    def beats_since_last_rest(self):
+        duration = 0.0
+        for note in reversed(self):
+            duration += note.duration
+            if note.pitch is 'rest':
+                break
+        return duration
+
+    def get_last_pitched(self):
+        for note in reversed(self):
+            # Check if it's a note with a pitch (that can be 0, or a non-empty chord)
+            if isinstance(note.pitch, int) or (isinstance(note.pitch, list) and note.pitch):
+                return note
 
 
 class Music(object):
@@ -195,6 +209,18 @@ class Music(object):
         result = {}
         for instrument in self.instruments:
             result[instrument.name] = instrument.get_at_tick(tick)
+        return result
+
+    def time_since_last_rest(self, instruments=None):
+        if instruments == None:
+            instruments = self.instruments
+
+        beat_duration_seconds = 60.0 / self.starting_tempo_bpm  # TODO: this works only if bpm is in quarter notes
+
+        result = {}
+        for i in instruments:
+            result[i.name] = i.beats_since_last_rest() * beat_duration_seconds
+
         return result
 
     def notate(self):
