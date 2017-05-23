@@ -87,11 +87,11 @@ class Movement3(object):
         total_event_duration = 0.0
         if random.random() < .5:
             # Add a rest before the next note
-            rest_duration = 1.0  # TODO: randomize
+            rest_duration = random.choice([1, 2])
             total_event_duration += rest_duration
             changing.add_note(pitch='rest', duration=rest_duration)
 
-        note_duration = 1.0  # TODO: randomize
+        note_duration = random.choice([2, 3])
         total_event_duration += note_duration
         changing.add_note(pitch=new_pitch, duration=note_duration)
 
