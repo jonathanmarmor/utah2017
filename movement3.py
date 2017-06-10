@@ -177,6 +177,9 @@ class Movement3(object):
                 # weight the different weights
                 weight = (distance_weight * 1.0) + (harmony_weight * .25)
 
+                if pitch_option > previous_pitch:
+                    weight *= 1.25
+
                 weights.append(weight)
 
                 # print harmony  #, weight
