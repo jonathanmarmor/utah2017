@@ -58,7 +58,16 @@ def get_intervals(pitches):
 
 class Movement3(object):
     def __init__(self):
-        self.music = m = Music()
+        self.music = m = Music(instrument_names=(
+                # 'violin',
+                'flute',
+                'oboe',
+                'clarinet',
+                # 'alto_saxophone',
+                # 'trumpet',
+                # 'bass',
+                # 'percussion'
+            ))
 
         self.winds = [m.f, m.ob, m.cl]
 
@@ -71,9 +80,14 @@ class Movement3(object):
         self.music.notate()
 
     def first(self):
-        self.music.ob.add_note(pitch=72, duration=random.choice([2, 3, 4]))
-        self.music.cl.add_note(pitch=73, duration=random.choice([2, 3, 4]))
-        self.music.f.add_note(pitch=74, duration=random.choice([2, 3, 4]))
+        # self.music.ob.add_note(pitch=72, duration=random.choice([2, 3, 4]))
+        # self.music.cl.add_note(pitch=73, duration=random.choice([2, 3, 4]))
+        # self.music.f.add_note(pitch=74, duration=random.choice([2, 3, 4]))
+
+        self.music.ob.add_note(pitch=72, duration=1)
+        self.music.cl.add_note(pitch=73, duration=1)
+        self.music.f.add_note(pitch=74, duration=1)
+
 
     def go(self, ticks=50):
         for tick in range(ticks):
@@ -87,11 +101,11 @@ class Movement3(object):
         total_event_duration = 0.0
         if random.random() < .5:
             # Add a rest before the next note
-            rest_duration = random.choice([1, 1, 1, 2, 2, 3])
+            rest_duration = 1  # random.choice([1, 1, 1, 2, 2, 3])
             total_event_duration += rest_duration
             changing.add_note(pitch='rest', duration=rest_duration)
 
-        note_duration = random.choice([1, 1, 2])
+        note_duration = 1  # random.choice([1, 1, 2])
         total_event_duration += note_duration
         changing.add_note(pitch=new_pitch, duration=note_duration)
 
