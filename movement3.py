@@ -108,14 +108,14 @@ class Movement3(object):
                     instrument[-1].duration += dur_to_add
 
             # Add a rest before the next note
-            rest_duration_options = [1,  2, 3]
-            rest_duration_weights = [15, 4, 1]
+            rest_duration_options = [1,  2]
+            rest_duration_weights = [16, 1]
             rest_duration = weighted_choice(rest_duration_options, rest_duration_weights)
 
             total_event_duration += rest_duration
             changing.add_note(pitch='rest', duration=rest_duration)
 
-        note_duration = random.choice([1, 1, 1, 1, 1, 2])
+        note_duration = random.choice([1, 1, 1, 1, 1, 2, 2, 3])
         total_event_duration += note_duration
         changing.add_note(pitch=new_pitch, duration=note_duration)
 
@@ -152,7 +152,9 @@ class Movement3(object):
 
         pitch_options = []
         weights = []
-        for pitch_option in changing.range:
+
+        available_pitches = [p for p in changing.range if p is not changing[-1].pitch]
+        for pitch_option in available_pitches:
             harmony = holdovers + [pitch_option]
             harmony.sort()
             harmony = [ps - harmony[0] for ps in harmony]
