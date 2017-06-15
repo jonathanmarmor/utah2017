@@ -3,12 +3,17 @@ import datetime
 import music21
 
 
-NOTATION_GUI_APP = '/Applications/MuseScore 2.app'
-# NOTATION_GUI_APP = '/Applications/Sibelius 7.app'
+# NOTATION_GUI_APPS = [
+#     '/Applications/Sibelius 7.app',
+#     '/Applications/MuseScore 2.app',
+# ]
 
 
 def show(stream):
-    stream.show('musicxml', NOTATION_GUI_APP)
+    try:
+        stream.show('musicxml', '/Applications/Sibelius 7.app')
+    except:
+        stream.show('musicxml', '/Applications/MuseScore 2.app')
 
 
 def get_music21_user_settings_path():

@@ -171,17 +171,20 @@ class Instrument(list):
 
 
 class Music(object):
-    def __init__(self, title='Full Movie', starting_tempo_bpm=160):
-        self.instrument_names = (
-            'violin',
-            'flute',
-            'oboe',
-            'clarinet',
-            'alto_saxophone',
-            'trumpet',
-            'bass',
-            # 'percussion'
-        )
+    def __init__(self, title='Full Movie', starting_tempo_bpm=160, instrument_names=None):
+        if instrument_names == None:
+            instrument_names = (
+                'violin',
+                'flute',
+                'oboe',
+                'clarinet',
+                'alto_saxophone',
+                'trumpet',
+                'bass',
+                # 'percussion'
+            )
+        self.instrument_names = instrument_names
+
         self.title = title
         self.composer = 'Jonathan Marmor'
         self.time_signature = None

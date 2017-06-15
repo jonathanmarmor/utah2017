@@ -58,7 +58,7 @@ def get_intervals(pitches):
 
 class Movement3(object):
     def __init__(self):
-        self.music = m = Music()
+        self.music = m = Music(instrument_names=('flute', 'oboe', 'clarinet'))
 
         self.winds = [m.f, m.ob, m.cl]
 
@@ -114,7 +114,7 @@ class Movement3(object):
             weight = sustain_time ** 2
             weights.append(weight)
 
-        print weights
+        # print weights
         changing = weighted_choice(self.winds, weights)
 
         # changing = random.choice(self.winds)
