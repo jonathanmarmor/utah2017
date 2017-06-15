@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import random
+from collections import Counter
 
 from music_tools import Music
 from utils import pairwise, weighted_choice
@@ -60,6 +61,7 @@ def get_intervals(pitches):
 
 class Movement3(object):
     def __init__(self):
+        self.stats = Counter()
         self.music = m = Music(instrument_names=(
                 # 'violin',
                 'flute',
@@ -77,22 +79,28 @@ class Movement3(object):
 
         self.first()
 
-        self.go(200)
+        self.go(120.0)
+
+        self.stats['duration'] = self.music.duration_seconds()
+
+        self.print_stats()
 
         self.music.notate()
 
-    def first(self):
-        # self.music.ob.add_note(pitch=72, duration=random.choice([2, 3, 4]))
-        # self.music.cl.add_note(pitch=73, duration=random.choice([2, 3, 4]))
-        # self.music.f.add_note(pitch=74, duration=random.choice([2, 3, 4]))
+    def print_stats(self):
+        print
+        print '-' * 10, 'STATS', '-' * 10
+        for k in self.stats:
+            print k, self.stats[k]
+        print
 
+    def first(self):
         self.music.ob.add_note(pitch=80, duration=1)
         self.music.cl.add_note(pitch=81, duration=1)
         self.music.f.add_note(pitch=82, duration=1)
 
-
-    def go(self, ticks=50):
-        for tick in range(ticks):
+    def go(self, duration=120.0):
+        while self.music.duration_seconds() < duration:
             self.next()
 
     def next(self):
@@ -103,6 +111,10 @@ class Movement3(object):
         total_event_duration = 0.0
         if random.random() < .5:
             if changing[-1].duration == 1:
+
+
+                # Make this longer if the revealed harmony is good
+
                 dur_to_add = random.choice([1.0, 1.0, 1.0, 2.0])
                 for instrument in self.winds:
                     instrument[-1].duration += dur_to_add
@@ -117,6 +129,7 @@ class Movement3(object):
 
         note_duration = random.choice([1, 1, 1, 1, 1, 2, 2, 3])
         total_event_duration += note_duration
+
         changing.add_note(pitch=new_pitch, duration=note_duration)
 
         for i in not_changing:
@@ -142,7 +155,7 @@ class Movement3(object):
         not_changing = [w for w in self.winds if w is not changing]
         return changing, not_changing
 
-    def pick_new_pitch(self, changing, not_changing):
+    def pick_new_pitch(self, changing, not_changing, allow_repeated_pitch=False):
 
         ### Pick only allowed harmonies
         holdovers = [i[-1].pitch for i in not_changing]
@@ -153,7 +166,11 @@ class Movement3(object):
         pitch_options = []
         weights = []
 
-        available_pitches = [p for p in changing.range if p is not changing[-1].pitch]
+        if allow_repeated_pitch:
+            available_pitches = changing.range[:]
+        else:
+            available_pitches = [p for p in changing.range if p is not changing[-1].pitch]
+
         for pitch_option in available_pitches:
             harmony = holdovers + [pitch_option]
             harmony.sort()
@@ -185,11 +202,17 @@ class Movement3(object):
                 # print harmony  #, weight
 
         new_pitch = weighted_choice(pitch_options, weights)
+
+        if new_pitch == None:
+            self.stats['allow_repeated_pitch'] += 1
+            new_pitch = self.pick_new_pitch(changing, not_changing, allow_repeated_pitch=True)
+        else:
+            self.stats['dont_allow_repeated_pitch'] += 1
+
+
+
         # new_pitch = random.choice(pitch_options)
         # print
-
-
-
 
         ### Wander by half and whole steps
 

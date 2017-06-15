@@ -10,10 +10,12 @@ import music21
 
 
 def show(stream):
-    try:
-        stream.show('musicxml', '/Applications/Sibelius 7.app')
-    except:
-        stream.show('musicxml', '/Applications/MuseScore 2.app')
+    stream.show('musicxml', '/Applications/MuseScore 2.app')
+
+    # try:
+    #     stream.show('musicxml', '/Applications/Sibelius 7.app')
+    # except:
+    #     stream.show('musicxml', '/Applications/MuseScore 2.app')
 
 
 def get_music21_user_settings_path():

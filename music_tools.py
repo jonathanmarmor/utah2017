@@ -208,6 +208,12 @@ class Music(object):
     def duration(self):
         return max(instrument.duration() for instrument in self.instruments)
 
+    def duration_seconds(self):
+        n_beats = self.duration()
+        beat_duration = 60.0 / self.starting_tempo_bpm
+        duration = beat_duration * n_beats
+        return duration
+
     def get_at_tick(self, tick):
         result = {}
         for instrument in self.instruments:
