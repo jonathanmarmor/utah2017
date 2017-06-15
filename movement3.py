@@ -7,7 +7,9 @@ from utils import pairwise, weighted_choice
 
 
 ALLOWED_HARMONIES = {
-    (0, 1, 2): 1.0,
+    (0, 1): 3.0,
+
+    (0, 1, 2): 2.0,
 
     (0, 1, 3): 1.0,
     (0, 2, 3): 1.0,
@@ -58,7 +60,16 @@ def get_intervals(pitches):
 
 class Movement3(object):
     def __init__(self):
-        self.music = m = Music(instrument_names=('flute', 'oboe', 'clarinet'))
+        self.music = m = Music(instrument_names=(
+                # 'violin',
+                'flute',
+                'oboe',
+                'clarinet',
+                # 'alto_saxophone',
+                # 'trumpet',
+                # 'bass',
+                # 'percussion'
+            ))
 
         self.winds = [m.f, m.ob, m.cl]
 
@@ -66,14 +77,19 @@ class Movement3(object):
 
         self.first()
 
-        self.go(150)
+        self.go(200)
 
         self.music.notate()
 
     def first(self):
-        self.music.ob.add_note(pitch=72, duration=random.choice([2, 3, 4]))
-        self.music.cl.add_note(pitch=73, duration=random.choice([2, 3, 4]))
-        self.music.f.add_note(pitch=74, duration=random.choice([2, 3, 4]))
+        # self.music.ob.add_note(pitch=72, duration=random.choice([2, 3, 4]))
+        # self.music.cl.add_note(pitch=73, duration=random.choice([2, 3, 4]))
+        # self.music.f.add_note(pitch=74, duration=random.choice([2, 3, 4]))
+
+        self.music.ob.add_note(pitch=80, duration=1)
+        self.music.cl.add_note(pitch=81, duration=1)
+        self.music.f.add_note(pitch=82, duration=1)
+
 
     def go(self, ticks=50):
         for tick in range(ticks):
@@ -86,12 +102,20 @@ class Movement3(object):
 
         total_event_duration = 0.0
         if random.random() < .5:
+            if changing[-1].duration == 1:
+                dur_to_add = random.choice([1.0, 1.0, 1.0, 2.0])
+                for instrument in self.winds:
+                    instrument[-1].duration += dur_to_add
+
             # Add a rest before the next note
-            rest_duration = random.choice([1, 1, 1, 2, 2, 3])
+            rest_duration_options = [1,  2]
+            rest_duration_weights = [16, 1]
+            rest_duration = weighted_choice(rest_duration_options, rest_duration_weights)
+
             total_event_duration += rest_duration
             changing.add_note(pitch='rest', duration=rest_duration)
 
-        note_duration = random.choice([1, 1, 2])
+        note_duration = random.choice([1, 1, 1, 1, 1, 2, 2, 3])
         total_event_duration += note_duration
         changing.add_note(pitch=new_pitch, duration=note_duration)
 
@@ -109,15 +133,11 @@ class Movement3(object):
         weights = []
         for inst in self.winds:
             sustain_time = inst.beats_since_last_rest() * (60.0 / self.music.starting_tempo_bpm)
-
             # weight = (inst.beats_since_last_rest() + 1) ** 2.0
-            weight = sustain_time ** 2
+            weight = sustain_time ** 3
             weights.append(weight)
 
-        # print weights
         changing = weighted_choice(self.winds, weights)
-
-        # changing = random.choice(self.winds)
 
         not_changing = [w for w in self.winds if w is not changing]
         return changing, not_changing
@@ -132,11 +152,17 @@ class Movement3(object):
 
         pitch_options = []
         weights = []
-        for pitch_option in changing.range:
+
+        available_pitches = [p for p in changing.range if p is not changing[-1].pitch]
+        for pitch_option in available_pitches:
             harmony = holdovers + [pitch_option]
             harmony.sort()
             harmony = [ps - harmony[0] for ps in harmony]
+
+            harmony = list(set(harmony))
+            harmony.sort()
             harmony = tuple(harmony)
+
             if harmony in ALLOWED_HARMONIES:
                 pitch_options.append(pitch_option)
 
@@ -151,9 +177,12 @@ class Movement3(object):
                 # weight the different weights
                 weight = (distance_weight * 1.0) + (harmony_weight * .25)
 
+                if pitch_option > previous_pitch:
+                    weight *= 1.25
+
                 weights.append(weight)
 
-                # print harmony, weight
+                # print harmony  #, weight
 
         new_pitch = weighted_choice(pitch_options, weights)
         # new_pitch = random.choice(pitch_options)
