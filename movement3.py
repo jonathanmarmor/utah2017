@@ -62,6 +62,7 @@ def get_intervals(pitches):
 class Movement3(object):
     def __init__(self):
         self.stats = Counter()
+        self.stats['beats_since_last_rest'] = Counter()
         self.music = m = Music(instrument_names=(
                 # 'violin',
                 'flute',
@@ -93,6 +94,8 @@ class Movement3(object):
         for k in self.stats:
             print k, self.stats[k]
         print
+        for k in sorted(self.stats['beats_since_last_rest'].keys()):
+            print '{:<5}: {}'.format(k, self.stats['beats_since_last_rest'][k])
 
     def first(self):
         self.music.ob.add_note(pitch=80, duration=1)
@@ -109,15 +112,22 @@ class Movement3(object):
         new_pitch = self.pick_new_pitch(changing, not_changing)
 
         total_event_duration = 0.0
-        if random.random() < .5:
+
+
+        if random.randint(2, 17) < changing.beats_since_last_rest():
+        # if random.random() < .5:
+
             if changing[-1].duration == 1:
 
 
-                # Make this longer if the revealed harmony is good
+                # TODO: Make this longer if the revealed harmony is good
 
+                # If the last note in the phrase was a quarter note, make it longer
                 dur_to_add = random.choice([1.0, 1.0, 1.0, 2.0])
                 for instrument in self.winds:
                     instrument[-1].duration += dur_to_add
+
+            self.stats['beats_since_last_rest'][changing.beats_since_last_rest()] += 1
 
             # Add a rest before the next note
             rest_duration_options = [1,  2]
@@ -127,6 +137,7 @@ class Movement3(object):
             total_event_duration += rest_duration
             changing.add_note(pitch='rest', duration=rest_duration)
 
+
         note_duration = random.choice([1, 1, 1, 1, 1, 2, 2, 3])
         total_event_duration += note_duration
 
@@ -135,6 +146,10 @@ class Movement3(object):
         for i in not_changing:
             i[-1].duration += total_event_duration
 
+    # def
+    #     not_changing_pitches = [i[-1].pitch for i in not_changing]
+    #     revealed_harmony = max(not_changing_pitches) - min(not_changing_pitches)
+    #     self.stats[revealed_harmony] += 1
 
     def pick_changing_instrument(self):
 
@@ -142,15 +157,17 @@ class Movement3(object):
         # previous_chord = [i[-1].pitch for i in self.winds]
         # intervals = get_intervals(previous_chord)
 
-
         weights = []
         for inst in self.winds:
             sustain_time = inst.beats_since_last_rest() * (60.0 / self.music.starting_tempo_bpm)
             # weight = (inst.beats_since_last_rest() + 1) ** 2.0
-            weight = sustain_time ** 3
+            # weight = sustain_time ** 2
+            weight = sustain_time
             weights.append(weight)
 
         changing = weighted_choice(self.winds, weights)
+
+        # changing = random.choice(self.winds)
 
         not_changing = [w for w in self.winds if w is not changing]
         return changing, not_changing
