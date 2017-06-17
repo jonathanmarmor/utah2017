@@ -68,8 +68,8 @@ class Movement3(object):
                 'flute',
                 'oboe',
                 'clarinet',
-                # 'alto_saxophone',
-                # 'trumpet',
+                'alto_saxophone',
+                'trumpet',
                 # 'bass',
                 # 'percussion'
             ))
@@ -98,9 +98,9 @@ class Movement3(object):
             print '{:<5}: {}'.format(k, self.stats['beats_since_last_rest'][k])
 
     def first(self):
-        self.music.ob.add_note(pitch=80, duration=1)
-        self.music.cl.add_note(pitch=81, duration=1)
-        self.music.f.add_note(pitch=82, duration=1)
+        self.music.f.add_note(pitch=83, duration=2)
+        self.music.ob.add_note(pitch=82, duration=2)
+        self.music.cl.add_note(pitch=81, duration=2)
 
     def go(self, duration=120.0):
         while self.music.duration_seconds() < duration:
