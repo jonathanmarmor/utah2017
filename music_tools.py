@@ -94,6 +94,12 @@ def is_harmony_allowed(pitches):
     return tuple(pitches_to_pitchclasses(pitches)) in allowed_harmonies
 
 
+def get_intervals(pitches):
+    ps = list(set(pitches))
+    ps.sort()
+    return [b - a for a, b in pairwise(ps)]
+
+
 class Tick(object):
     def __init__(self, tick):
         self.tick = tick
@@ -155,12 +161,13 @@ class Instrument(list):
                 return note
             duration += note.duration
 
-    def beats_since_last_rest(self):
+    def beats_since_last_rest(self, rest_duration=1):
         duration = 0.0
         for note in reversed(self):
             duration += note.duration
             if note.pitch is 'rest':
-                break
+                if note.duration >= rest_duration:
+                    break
         return duration
 
     def get_last_pitched(self):
