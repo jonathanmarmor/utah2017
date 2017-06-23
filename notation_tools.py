@@ -10,7 +10,8 @@ import music21
 
 
 def show(stream):
-    stream.show('musicxml', '/Applications/MuseScore 2.app')
+    # stream.show('musicxml', '/Applications/MuseScore 2.app')
+    stream.show('musicxml', '/Applications/Sibelius 7.app')
 
     # try:
     #     stream.show('musicxml', '/Applications/Sibelius 7.app')

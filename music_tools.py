@@ -31,6 +31,14 @@ def pitches_to_pitchclasses(pitches):
     return pitchclasses
 
 
+def pitches_to_chord_type(pitches):
+    chord_type = list(set(pitches))
+    chord_type.sort()
+    lowest = chord_type[0]
+    chord_type = [p - lowest for p in chord_type]
+    return tuple(chord_type)
+
+
 def get_inversions(pitchclasses):
     inversions = []
     for p1 in pitchclasses:

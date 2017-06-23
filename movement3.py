@@ -3,7 +3,7 @@
 import random
 from collections import Counter
 
-from music_tools import Music
+from music_tools import Music, pitches_to_chord_type
 from utils import weighted_choice
 
 
@@ -67,6 +67,15 @@ ALLOWED_HARMONIES = {
 #     14:
 # }
 
+THIRDS_INTERVALS = {
+    3: 3,
+    4: 10,
+    5: 4,
+    7: 4,
+    8: 5,
+    9: 10
+}
+
 
 DISTANCE_WEIGHTS = [.25, 1.0, .8] + [1.0 / (2.0 ** x) for x in range(3, 30)]
 
@@ -87,6 +96,8 @@ class Movement3(object):
         self.thirds = [m.alto_saxophone, m.trumpet]
         self.violin = m.violin
         self.bass = m.bass
+
+        self.thirds_register = range(55, 81)
 
         cluster_lowest_pitch = 70
         for i in self.clusters:
@@ -117,6 +128,13 @@ class Movement3(object):
         self.music.f.add_note(pitch=83, duration=2)
         self.music.ob.add_note(pitch=82, duration=2)
         self.music.cl.add_note(pitch=81, duration=2)
+
+        # self.music.alto_saxophone.add_note(pitch=67, duration=40)
+        # self.music.trumpet.add_note(pitch=64, duration=40)
+
+        # self.music.violin.add_note(pitch=67, duration=40)
+
+        # self.music.bass.add_note(pitch=36, duration=40)
 
     def go(self, duration=120.0):
         while self.music.duration_seconds() < duration:
@@ -164,6 +182,9 @@ class Movement3(object):
 
         for i in not_changing:
             i[-1].duration += total_event_duration
+
+        harmony = pitches_to_chord_type([i[-1].pitch for i in self.clusters])
+        self.stats['harmonies'][harmony] += 1
 
     def get_revealed_harmony(self, not_changing):
         not_changing_pitches = [i[-1].pitch for i in not_changing]
