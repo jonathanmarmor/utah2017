@@ -212,6 +212,29 @@ class Music(object):
             self.instruments.append(instrument)
             self.grid[inst_name] = instrument
 
+    def print_registers(self):
+        lowest = min([i.range[0] for i in self.instruments])
+        highest = max([i.range[-1] for i in self.instruments])
+        longest_name = max([len(i.name) for i in self.instruments])
+        format_string = '{:<' + str(longest_name) + '}'
+
+        header = ' ' * longest_name
+        for pc in range(lowest, highest + 1):
+            if pc % 2 == 0:
+                header += str(pc)
+            else:
+                header += '  '
+        print header
+
+        for i in self.instruments:
+            line = format_string.format(i.name)
+            for pc in range(lowest, highest + 1):
+                if pc in i.range:
+                    line += '. '
+                else:
+                    line += '  '
+            print line
+
     def duration(self):
         return max(instrument.duration() for instrument in self.instruments)
 

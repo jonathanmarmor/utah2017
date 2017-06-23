@@ -75,18 +75,18 @@ class Movement3(object):
     def __init__(self):
         self.stats = self.init_stats()
         m = self.music = Music(instrument_names=(
-                # 'violin',
+                'violin',
                 'flute',
                 'oboe',
                 'clarinet',
-                # 'alto_saxophone',
-                # 'trumpet',
-                # 'bass'
+                'alto_saxophone',
+                'trumpet',
+                'bass'
             ))
         self.clusters = [m.f, m.ob, m.cl]
-        # self.thirds = [m.alto_saxophone, m.trumpet]
-        # self.violin = m.violin
-        # self.bass = m.bass
+        self.thirds = [m.alto_saxophone, m.trumpet]
+        self.violin = m.violin
+        self.bass = m.bass
 
         cluster_lowest_pitch = 70
         for i in self.clusters:
