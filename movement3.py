@@ -77,7 +77,24 @@ THIRDS_INTERVALS = {
 }
 
 
-DISTANCE_WEIGHTS = [.25, 1.0, .8] + [1.0 / (2.0 ** x) for x in range(3, 30)]
+DISTANCE_WEIGHTS = [.25, 1.0, .8] + [1.0 / (2.0 ** x) for x in range(3, 50)]
+
+
+BLUES_PROGRESSION = [
+    (0, 4, 7),
+    (0, 4, 7),
+    (0, 4, 7),
+    (0, 4, 7),
+    (0, 5, 9),
+    (0, 5, 9),
+    (0, 4, 7),
+    (0, 4, 7),
+    (0, 2, 7, 11),
+    (0, 5, 9),
+    (0, 4, 7),
+    (0, 4, 7, 11)
+]
+SCALE = (0, 2, 3, 4, 5, 7, 9, 11)
 
 
 class Movement3(object):
@@ -124,32 +141,52 @@ class Movement3(object):
         for k in sorted(self.stats['beats_since_last_rest'].keys()):
             print '{:<5}: {}'.format(k, self.stats['beats_since_last_rest'][k])
 
+    def print_columns(self):
+        print
+        instrument_names = [i.name for i in self.music.instruments]
+        header = '{:<16}'.format('tick')
+        for name in instrument_names:
+            header += '{:<16}'.format(name)
+        print header
+
+        for notes in self.music:
+            row = '{:<16}'.format(notes['tick'])
+            for name in instrument_names:
+                row += '{:<16}'.format(notes[name].pitch)
+            print row
+
     def first(self):
-        self.music.f.add_note(pitch=83, duration=2)
-        self.music.ob.add_note(pitch=82, duration=2)
-        self.music.cl.add_note(pitch=81, duration=2)
+        self.music.f.add_note(pitch=84, duration=2)
+        self.music.ob.add_note(pitch=83, duration=2)
+        self.music.cl.add_note(pitch=82, duration=2)
 
-        # self.music.alto_saxophone.add_note(pitch=67, duration=40)
-        # self.music.trumpet.add_note(pitch=64, duration=40)
+        self.music.alto_saxophone.add_note(pitch=67, duration=16)
+        self.music.trumpet.add_note(pitch=64, duration=16)
 
-        # self.music.violin.add_note(pitch=67, duration=40)
+        self.music.violin.add_note(pitch=67, duration=16)
 
-        # self.music.bass.add_note(pitch=36, duration=40)
+        self.music.bass.add_note(pitch=48, duration=1)
 
     def go(self, duration=120.0):
         while self.music.duration_seconds() < duration:
             self.next()
 
     def next(self):
-        changing, not_changing = self.pick_changing_instrument()
-        new_pitch = self.pick_new_pitch(changing, not_changing)
+        self.clusters_next()
+        # self.thirds_next()
+        # self.violin_next()
+        self.bass_next()
+
+    def clusters_next(self):
+        changing, not_changing = self.clusters_pick_changing_instrument()
+        new_pitch = self.clusters_pick_new_pitch(changing, not_changing)
 
         total_event_duration = 0.0
         if random.randint(2, 17) < changing.beats_since_last_rest():
             # If the last note in the phrase was a quarter note, make it longer
             if changing[-1].duration == 1:
                 # Make it even longer if the revealed harmony is good
-                revealed_harmony = self.get_revealed_harmony(not_changing)
+                revealed_harmony = self.clusters_get_revealed_harmony(not_changing)
                 nice_dyads = [0, 1, 2, 7, 12]
                 if revealed_harmony in nice_dyads:
                     options_for_durations_to_add = [1.0, 2.0, 2.0, 2.0, 3.0, 4.0]
@@ -186,12 +223,12 @@ class Movement3(object):
         harmony = pitches_to_chord_type([i[-1].pitch for i in self.clusters])
         self.stats['harmonies'][harmony] += 1
 
-    def get_revealed_harmony(self, not_changing):
+    def clusters_get_revealed_harmony(self, not_changing):
         not_changing_pitches = [i[-1].pitch for i in not_changing]
         revealed_harmony = max(not_changing_pitches) - min(not_changing_pitches)
         return revealed_harmony
 
-    def pick_changing_instrument(self):
+    def clusters_pick_changing_instrument(self):
         # TODO: try prefering picking changing instruments when the other two instruments are playing a minor second
 
         weights = []
@@ -202,7 +239,7 @@ class Movement3(object):
             sustain_weight = sustain_time
 
             # not_changing = [i for i in self.clusters if i is not inst]
-            # revealed_harmony = self.get_revealed_harmony(not_changing)
+            # revealed_harmony = self.clusters_get_revealed_harmony(not_changing)
             # revealed_harmony_weight =
 
             # weight = (sustain_weight * ) + (revealed_harmony_weight * )
@@ -214,7 +251,7 @@ class Movement3(object):
         not_changing = [w for w in self.clusters if w is not changing]
         return changing, not_changing
 
-    def pick_new_pitch(self, changing, not_changing, allow_repeated_pitch=False):
+    def clusters_pick_new_pitch(self, changing, not_changing, allow_repeated_pitch=False):
 
         ### Pick only allowed harmonies
         holdovers = [i[-1].pitch for i in not_changing]
@@ -229,6 +266,8 @@ class Movement3(object):
             available_pitches = changing.cluster_range[:]
         else:
             available_pitches = [p for p in changing.cluster_range if p is not changing[-1].pitch]
+
+        bar_number = int(changing.duration() % 4)
 
         for pitch_option in available_pitches:
             harmony = holdovers + [pitch_option]
@@ -248,11 +287,15 @@ class Movement3(object):
 
                 harmony_weight = ALLOWED_HARMONIES[harmony]
 
+                blues_weight = 1
+                if pitch_option % 12 in BLUES_PROGRESSION[bar_number]:
+                    blues_weight = 3
+
                 # weight the different weights
-                weight = (distance_weight * 1.0) + (harmony_weight * .25)
+                weight = ((distance_weight * 1.0) + (harmony_weight * .33)) * blues_weight
 
                 if pitch_option > previous_pitch:
-                    weight *= 1.25
+                    weight *= 1.5
 
                 weights.append(weight)
 
@@ -260,11 +303,70 @@ class Movement3(object):
 
         if new_pitch == None:
             self.stats['allow_repeated_pitch'] += 1
-            new_pitch = self.pick_new_pitch(changing, not_changing, allow_repeated_pitch=True)
+            new_pitch = self.clusters_pick_new_pitch(changing, not_changing, allow_repeated_pitch=True)
         else:
             self.stats['dont_allow_repeated_pitch'] += 1
 
         return new_pitch
+
+    def bass_next(self):
+        bar_number = self.bass.duration() // 4
+        bar_in_progression = bar_number % len(BLUES_PROGRESSION)
+
+        beat_number = int(self.bass.duration() % 4)
+
+        previous_pitch = self.bass.get_last_pitched().pitch
+
+        pitch_options = []
+        weights = []
+
+        available_pitches = range(35, 52)
+        for pitch_option in available_pitches:
+            weight = 1.0
+
+            if pitch_option % 12 not in SCALE:
+                weight = .1
+
+            if pitch_option % 12 in BLUES_PROGRESSION[bar_in_progression]:
+                weight = 8.0
+
+
+            # The further away the new pitch from the previous pitch, the lower the weight
+            distance = abs(previous_pitch - pitch_option)
+
+            if distance == 0:
+                weight = 1.0
+            else:
+                if distance < 3:
+                    weight = weight * 8
+                elif distance < 6:
+                    weight = weight * 4
+                # elif distance < 9:
+                #     weight = weight * 2
+                elif distance > 12:
+                    weight = .125
+
+            pitch_options.append(pitch_option)
+            weights.append(weight)
+
+        pitch = weighted_choice(pitch_options, weights)
+
+        if beat_number == 0:
+            duration_options = [1,  2,  3, 4, 5, 6, 7, 8]
+            duration_weights = [35, 24, 2, 6, 1, 1, 1, 2]
+        elif beat_number == 1:
+            duration_options = [1,  2,  3,  4, 5, 6, 7]
+            duration_weights = [35, 12, 16, 1, 1, 1, 3]
+        elif beat_number == 2:
+            duration_options = [1,  2,  4, 6]
+            duration_weights = [24, 24, 1, 2]
+        elif beat_number == 3:
+            duration_options = [1,  2, 5]
+            duration_weights = [40, 2, 5]
+
+        duration = weighted_choice(duration_options, duration_weights)
+
+        self.bass.add_note(pitch=pitch, duration=duration)
 
 
 if __name__ == '__main__':

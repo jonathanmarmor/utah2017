@@ -252,11 +252,36 @@ class Music(object):
         duration = beat_duration * n_beats
         return duration
 
-    def get_at_tick(self, tick):
-        result = {}
-        for instrument in self.instruments:
+    def get_at_tick(self, tick, instruments=None):
+        if instruments == None:
+            instruments = self.instruments
+        result = {'tick': tick}
+        for instrument in instruments:
             result[instrument.name] = instrument.get_at_tick(tick)
         return result
+
+    def __iter__(self):
+        for tick in range(int(self.duration())):
+            yield self.get_at_tick(tick)
+
+    def print_columns(self):
+        print
+        print self.title, 'by', self.composer
+        instrument_names = [i.name for i in self.instruments]
+        header = '{:<16}'.format('tick')
+        for name in instrument_names:
+            header += '{:<16}'.format(name)
+        print header
+
+        for notes in self:
+            row = '{:<16}'.format(notes['tick'])
+            for name in instrument_names:
+                if notes[name] == None:
+                    pitch = 'None'
+                else:
+                    pitch = notes[name].pitch
+                row += '{:<16}'.format(pitch)
+            print row
 
     def time_since_last_rest(self, instruments=None):
         if instruments == None:
