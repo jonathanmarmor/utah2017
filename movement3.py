@@ -124,6 +124,8 @@ class Movement3(object):
         self.go(120.0)
         self.stats['duration'] = self.music.duration_seconds()
         self.print_stats()
+
+    def notate(self):
         self.music.notate()
 
     def init_stats(self):
@@ -370,4 +372,14 @@ class Movement3(object):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-d',
+        '--dont-notate',
+        help='dont generate notation',
+        action="store_true")
+    args = parser.parse_args()
     m3 = Movement3()
+    if not args.dont_notate:
+        m3.notate()
